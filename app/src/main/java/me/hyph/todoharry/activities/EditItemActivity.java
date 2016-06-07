@@ -13,7 +13,7 @@ import me.hyph.todoharry.enums.IntentKey;
 public class EditItemActivity extends AppCompatActivity {
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_item);
         final Intent intent = getIntent();
@@ -29,7 +29,7 @@ public class EditItemActivity extends AppCompatActivity {
         });
     }
 
-    public void onSavePressed(View v) {
+    public void onSavePressed(final View v) {
         final TextView textView = (TextView) findViewById(R.id.editTextView);
         final String newItemName = textView.getText().toString();
         final Intent data = new Intent();
