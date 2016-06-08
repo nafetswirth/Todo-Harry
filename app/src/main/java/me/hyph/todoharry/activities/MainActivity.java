@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
     private void setUpListViewListener() {
         lvItems.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+            public boolean onItemLongClick(final AdapterView<?> parent, final View view, final int position, final long id) {
                 items.remove(position);
                 itemsAdapter.notifyDataSetChanged();
                 writeItems();
@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
 
         lvItems.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            public void onItemClick(final AdapterView<?> parent, final View view, final int position, final long id) {
                 lastEditedItemIndex = position;
                 final Intent intent = new Intent(MainActivity.this, EditItemActivity.class);
                 final String item = items.get(position);
@@ -102,5 +102,6 @@ public class MainActivity extends AppCompatActivity {
         final String newTaskName = data.getExtras().getString(IntentKey.ItemName.toString());
         items.set(lastEditedItemIndex, newTaskName);
         itemsAdapter.notifyDataSetChanged();
+        writeItems();
     }
 }
