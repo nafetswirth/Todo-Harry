@@ -3,6 +3,7 @@ package me.hyph.todoharry.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -14,17 +15,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 import me.hyph.todoharry.R;
+import me.hyph.todoharry.adapters.ItemsAdapter;
 import me.hyph.todoharry.enums.IntentKey;
-import me.hyph.todoharry.utils.TodoItemsFileHelper;
+import me.hyph.todoharry.interfaces.ITodoItemsHelper;
+import me.hyph.todoharry.models.Item;
+import me.hyph.todoharry.utils.TodoItemsSQLiteHelper;
 
 public class MainActivity extends AppCompatActivity {
 
     private final int EDIT_ACTIVITY_REQUEST_CODE = 1;
 
-    private List<String> items;
-    private ArrayAdapter<String> itemsAdapter;
+    private List<Item> items;
+    private ArrayAdapter<Item> itemsAdapter;
     private ListView lvItems;
-    private TodoItemsFileHelper fileHelper;
+    private ITodoItemsHelper datasourceHelper;
 
     private int lastEditedItemIndex;
 
@@ -34,12 +38,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         lvItems = (ListView) findViewById(R.id.lvItems);
         items = new ArrayList<>();
-        fileHelper = new TodoItemsFileHelper(getFilesDir(), "todo.txt");
+        datasourceHelper = TodoItemsSQLiteHelper.getInstance(this);
         readItems();
-        itemsAdapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_list_item_1,
-                items
-        );
+        itemsAdapter = new ItemsAdapter(this, items);
         lvItems.setAdapter(itemsAdapter);
         setUpListViewListener();
     }
@@ -47,18 +48,18 @@ public class MainActivity extends AppCompatActivity {
     public void onAddItem(final View v) {
         final EditText etNewItem = (EditText) findViewById(R.id.etNewItem);
         final String text = etNewItem.getText().toString();
-        itemsAdapter.add(text);
+        final Item savedItem = writeItem(new Item(text));
+        itemsAdapter.add(savedItem);
         etNewItem.setText("");
-        writeItems();
     }
 
     private void setUpListViewListener() {
         lvItems.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(final AdapterView<?> parent, final View view, final int position, final long id) {
-                items.remove(position);
+                final Item removedItem = items.remove(position);
                 itemsAdapter.notifyDataSetChanged();
-                writeItems();
+                deleteItem(removedItem);
                 return true;
             }
         });
@@ -68,24 +69,36 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick(final AdapterView<?> parent, final View view, final int position, final long id) {
                 lastEditedItemIndex = position;
                 final Intent intent = new Intent(MainActivity.this, EditItemActivity.class);
-                final String item = items.get(position);
-                intent.putExtra(IntentKey.ItemName.toString(), item);
+                final Item item = items.get(position);
+                intent.putExtra(IntentKey.Item.toString(), item);
                 startActivityForResult(intent, EDIT_ACTIVITY_REQUEST_CODE);
             }
         });
     }
 
-    private void writeItems() {
+    private Item writeItem(final Item item) {
         try {
-            fileHelper.writeItems(items);
+            //this is an insert
+            final List<Item> items = new ArrayList<>();
+            items.add(item);
+            return datasourceHelper.writeItems(items).get(0);
+        } catch (final IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private void readItems() {
+        try {
+            items = datasourceHelper.readItems();
         } catch (final IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void readItems() {
+    private void deleteItem(final Item item) {
         try {
-            items = fileHelper.readItems();
+            datasourceHelper.deleteItem(item);
         } catch (final IOException e) {
             e.printStackTrace();
         }
@@ -99,9 +112,11 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        final String newTaskName = data.getExtras().getString(IntentKey.ItemName.toString());
-        items.set(lastEditedItemIndex, newTaskName);
+        final Item newItem = (Item) data.getExtras().getSerializable(IntentKey.Item.toString());
+        Log.d("Before Save", newItem.getDueTo().toString());
+        final Item savedItem = writeItem(newItem);
+        items.set(lastEditedItemIndex, savedItem);
+        Log.d("Before Save", newItem.getDueTo().toString());
         itemsAdapter.notifyDataSetChanged();
-        writeItems();
     }
 }
