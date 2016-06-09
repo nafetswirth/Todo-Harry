@@ -3,7 +3,6 @@ package me.hyph.todoharry.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -78,7 +77,6 @@ public class MainActivity extends AppCompatActivity {
 
     private Item writeItem(final Item item) {
         try {
-            //this is an insert
             final List<Item> items = new ArrayList<>();
             items.add(item);
             return datasourceHelper.writeItems(items).get(0);
@@ -113,10 +111,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         final Item newItem = (Item) data.getExtras().getSerializable(IntentKey.Item.toString());
-        Log.d("Before Save", newItem.getDueTo().toString());
         final Item savedItem = writeItem(newItem);
         items.set(lastEditedItemIndex, savedItem);
-        Log.d("Before Save", newItem.getDueTo().toString());
         itemsAdapter.notifyDataSetChanged();
     }
 }

@@ -3,7 +3,6 @@ package me.hyph.todoharry.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -18,8 +17,6 @@ import me.hyph.todoharry.enums.IntentKey;
 import me.hyph.todoharry.models.Item;
 
 public class EditItemActivity extends AppCompatActivity {
-    //This must be either now or when task edit -> an old date
-    private Date datePickerDate = new Date();
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -56,9 +53,7 @@ public class EditItemActivity extends AppCompatActivity {
         final String newItemName = textView.getText().toString();
         final Intent data = new Intent();
         final DatePicker datePicker = (DatePicker) findViewById(R.id.dpResult);
-        Log.d("Date", "Year=" + datePicker.getYear() + " Month=" + (datePicker.getMonth() + 1) + " day=" + datePicker.getDayOfMonth());
         final Date newTaskDate = new GregorianCalendar(datePicker.getYear(), datePicker.getMonth(), datePicker.getDayOfMonth()).getTime();
-        Log.d("WAT", newTaskDate.toString());
         data.putExtra(IntentKey.Item.toString(), new Item(item.getId(), newItemName, newTaskDate));
         setResult(RESULT_OK, data);
         finish();
